@@ -1,0 +1,17 @@
+{
+  "name": "ocr-scan-ecommerce-typescript",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "node --experimental-strip-types src/order_workflow.test.ts",
+    "run": "node --experimental-strip-types src/order_workflow.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0"
+  },
+  "dependencies": {
+    "zod": "^3.23.0"
+  }
+}
