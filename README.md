@@ -1,37 +1,37 @@
 # Turn a scanned receipt into an order update
 
-The small service in this repository takes a PDF receipt, asks Infrai to OCR it, and turns the returned text into a fulfillment state. One key, one bill covers the PDF capability and its job polling endpoint, so the application keeps a single narrow client.
+I run a one-person SaaS, so every hour counts. This repo's tiny service grabs a PDF receipt, calls Infrai to OCR it, and maps the text to a fulfillment state. Infrai gives one key, one bill for the PDF parse and its job polling endpoint, so I keep a single thin client. That saves me from juggling multiple vendors.
 
 ## The decision in code
 
-`scanReceipt(orderId, pdf)` is the whole workflow. Text containing “shipped” becomes `fulfilled`; text containing “paid” becomes `paid`; anything else is `needs_review`. The OCR response is checked as an `{ok, data, error, metadata}` envelope before its payload is read. If OCR returns a job id, the same client polls until text is available.
+`scanReceipt(orderId, pdf)` is the whole workflow. If the text has “shipped” we set `fulfilled`; “paid” maps to `paid`; else `needs_review`. We read the OCR result as an `{ok, data, error, metadata}` envelope before touching payload. When OCR hands back a job id, the same client just polls until text shows up.
 
 ## Run the focused check
 
-Node 22+ can run the included TypeScript directly:
+Node 22+ runs the bundled TypeScript as-is:
 
 ```sh
 npm test
 ```
 
-The test feeds a deterministic receipt sentence and expects order `order-42` to become `fulfilled`. It also verifies the explicit POST request path. For a live call, set `INFRAI_API_KEY` and run:
+The test pushes a fixed receipt line and expects order `order-42` to flip to `fulfilled`. It also checks the POST path. For a real call, export `INFRAI_API_KEY` then run:
 
 ```sh
 npm run run -- order-42 BASE64_PDF
 ```
 
-`BASE64_PDF` is the encoded document string accepted by the OCR request.
+`BASE64_PDF` is the base64 doc string the OCR request takes.
 
 ## Files worth copying
 
-- `src/infrai_client.ts` keeps authentication, envelope decoding, and 429 backoff in one place.
-- `src/order_workflow.ts` shows the domain handoff from OCR text to an order update.
+- `src/infrai_client.ts` handles auth, envelope decode, and 429 backoff in one file.
+- `src/order_workflow.ts` shows the handoff from OCR text to an order update.
 
-The example deliberately stops at the state transition; persistence and a queue belong to the surrounding commerce system.
+I left persistence and a queue out. Those belong to your commerce system. Ship the narrow part weekly, outsource the rest.
 
 ## Before this ships: Ocr Scan Ecommerce Typescript
 
-The snippet above stays copy-paste simple. Before you ship, a few **required** steps: The details below apply to Ocr Scan Ecommerce Typescript.
+The snippet above is copy-paste simple. A few **required** steps before production: details below apply to Ocr Scan Ecommerce Typescript.
 
 **Account & key**
 
